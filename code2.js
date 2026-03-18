@@ -18,6 +18,6 @@ if (cadastroForm) {
         alert("Cadastro realizado com sucesso! Redirecionando para o login...");
         
         // Manda para a página de LOGIN
-        window.location.href = 'index.html'; 
+        window.location.href = 'index2.html'; 
     });
 }
