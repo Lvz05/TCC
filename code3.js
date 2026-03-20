@@ -228,10 +228,10 @@ if (disorderDetail && disorderId && disordersData[disorderId]) {
         </div>
         
         <div class="action-buttons">
-            <a href="emergency.html" class="btn" style="background: #ef4444; color: white; text-decoration: none;">
+            <a href="index7.html" class="btn" style="background: #ef4444; color: white; text-decoration: none;">
                 Contatos de Emergência
             </a>
-            <a href="community.html" class="btn btn-primary" style="text-decoration: none;">
+            <a href="index4.html" class="btn btn-primary" style="text-decoration: none;">
                 Comunidade
             </a>
         </div>
