@@ -1,4 +1,4 @@
-// Login Form
+// painel do login
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     loginForm.addEventListener('submit', (e) => {
@@ -7,7 +7,7 @@ if (loginForm) {
     });
 }
 
-// Panic Button
+// botão do panico
 const panicButton = document.getElementById('panicButton');
 const panicModal = document.getElementById('panicModal');
 const closeModal = document.getElementById('closeModal');
