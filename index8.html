@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transtornos Mentais - HelpLife</title>
+    <title>Diário Pessoal - HelpLife</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
     <header class="header">
         <div class="container">
             <div class="header-content">
-                <a href="community.html" class="logo-link">
+                <a href="index4.html" class="logo-link">
                     <svg class="logo-icon-small" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="50" cy="50" r="45" fill="#10b981" opacity="0.2"/>
                         <path d="M50 20 C30 20, 20 35, 20 50 C20 65, 30 75, 50 85 C70 75, 80 65, 80 50 C80 35, 70 20, 50 20 Z" 
@@ -25,7 +25,7 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                         Comunidade
                     </a>
-                    <a href="index5.html" class="nav-link active">
+                    <a href="index5.html" class="nav-link">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 1 0 0-20z"/><path d="M12 6v4l2 2"/></svg>
                         Transtornos
                     </a>
@@ -33,18 +33,11 @@
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                         Emergência
                     </a>
-                    <a href="index8.html" class="nav-link">
+                    <a href="index8.html" class="nav-link active">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                         Diário
                     </a>
-                   
                 </nav>
-
-                <button class="mobile-menu-btn" id="mobileMenuBtn">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
-                    </svg>
-                </button>
             </div>
         </div>
     </header>
@@ -53,58 +46,59 @@
     <main class="main-content">
         <div class="container">
             <div class="page-header">
-                <h1>Transtornos Mentais</h1>
-                <p>Conheça mais sobre diferentes condições de saúde mental</p>
+                <h1>Diário Pessoal</h1>
+                <p>Registre seus sentimentos e acompanhe sua jornada</p>
             </div>
 
-            <div class="disorders-grid">
-                <a href="index6.html?id=depressao" class="disorder-card blue">
-                    <div class="disorder-icon">😔</div>
-                    <h3>Depressão</h3>
-                    <p>Transtorno de humor caracterizado por tristeza persistente</p>
-                </a>
+            <button class="btn btn-primary" id="newEntryBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Nova Anotação
+            </button>
 
-                <a href="index6.html?id=ansiedade" class="disorder-card yellow">
-                    <div class="disorder-icon">😰</div>
-                    <h3>Ansiedade</h3>
-                    <p>Preocupação excessiva e sintomas físicos desconfortáveis</p>
-                </a>
+            <!-- New Entry Form -->
+            <div class="card" id="newEntryForm" style="display: none; margin-top: 1.5rem;">
+                <form id="entryForm">
+                    <div class="form-group">
+                        <label>Como você está se sentindo?</label>
+                        <div class="mood-options">
+                            <button type="button" class="mood-btn" data-mood="😊">
+                                <span class="mood-emoji">😊</span>
+                                <span>Ótimo</span>
+                            </button>
+                            <button type="button" class="mood-btn" data-mood="🙂">
+                                <span class="mood-emoji">🙂</span>
+                                <span>Bem</span>
+                            </button>
+                            <button type="button" class="mood-btn" data-mood="😐">
+                                <span class="mood-emoji">😐</span>
+                                <span>Normal</span>
+                            </button>
+                            <button type="button" class="mood-btn" data-mood="😔">
+                                <span class="mood-emoji">😔</span>
+                                <span>Triste</span>
+                            </button>
+                            <button type="button" class="mood-btn" data-mood="😰">
+                                <span class="mood-emoji">😰</span>
+                                <span>Ansioso</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryContent">O que você gostaria de registrar hoje?</label>
+                        <textarea id="entryContent" placeholder="Escreva sobre seus pensamentos, sentimentos ou experiências do dia..." rows="6" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Salvar Anotação</button>
+                        <button type="button" class="btn btn-secondary" id="cancelEntryBtn">Cancelar</button>
+                    </div>
+                </form>
+            </div>
 
-                <a href="index6.html?id=panico" class="disorder-card red">
-                    <div class="disorder-icon">⚡</div>
-                    <h3>Síndrome do Pânico</h3>
-                    <p>Ataques repentinos de medo intenso e sintomas físicos</p>
-                </a>
-
-                <a href="index6.html?id=bipolar" class="disorder-card purple">
-                    <div class="disorder-icon">💜</div>
-                    <h3>Transtorno Bipolar</h3>
-                    <p>Alternância entre episódios de depressão e mania</p>
-                </a>
-
-                <a href="index6.html?id=toc" class="disorder-card indigo">
-                    <div class="disorder-icon">🧠</div>
-                    <h3>TOC</h3>
-                    <p>Transtorno Obsessivo-Compulsivo com pensamentos intrusivos</p>
-                </a>
-
-                <a href="index6.html?id=ludopatia" class="disorder-card orange">
-                    <div class="disorder-icon">🎲</div>
-                    <h3>Ludopatia</h3>
-                    <p>Dependência de jogos de azar e apostas</p>
-                </a>
-
-                <a href="index6.html?id=fobia-social" class="disorder-card teal">
-                    <div class="disorder-icon">👥</div>
-                    <h3>Fobia Social</h3>
-                    <p>Medo intenso de situações sociais e julgamento</p>
-                </a>
-
-                <a href="index6.html?id=tept" class="disorder-card pink">
-                    <div class="disorder-icon">⚠️</div>
-                    <h3>TEPT</h3>
-                    <p>Transtorno de Estresse Pós-Traumático</p>
-                </a>
+            <!-- Entries -->
+            <div class="journal-entries" id="journalEntries">
+                <!-- Entries will be dynamically inserted here -->
             </div>
         </div>
     </main>
@@ -155,6 +149,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script src="code.js"></script>
 </body>
 </html>
