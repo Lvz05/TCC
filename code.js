@@ -597,3 +597,58 @@ if (disorderDetail && disorderId && disordersData[disorderId]) {
         </div>
     `;
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Busca o formulário pelo ID que está no seu HTML
+  const formCadastro = document.getElementById("loginForm");
+
+  // Verifica se estamos na página correta antes de rodar o código
+  if (formCadastro) {
+    formCadastro.addEventListener("submit", async (evento) => {
+      // Impede a página de recarregar quando clica no botão
+      evento.preventDefault();
+
+      // 1. Pega os valores que o usuário digitou no HTML
+      const nome = document.getElementById("nome").value;
+      const email = document.getElementById("email").value;
+      const telefone = document.getElementById("telefone").value;
+      const senha = document.getElementById("password").value;
+      const confirmaSenha = document.getElementById("confirm-password").value;
+
+      // 2. Validação simples de senha
+      if (senha !== confirmaSenha) {
+        alert("As senhas não batem! Verifique e tente novamente.");
+        return;
+      }
+
+      // 3. Tenta enviar para a API (Node.js)
+      try {
+        const resposta = await fetch("http://localhost:3000/api/cadastro", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            nome: nome,
+            email: email,
+            telefone: telefone,
+            senha: senha,
+          }),
+        });
+
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+          // SUCESSO!
+          alert(dados.mensagem + " Agora você pode fazer o login.");
+          // Redireciona o usuário para a sua página de Login (substitua index2.html pelo nome correto se precisar)
+          window.location.href = "index2.html";
+        } else {
+          // ERRO (Ex: e-mail já existe)
+          alert("Erro: " + dados.erro);
+        }
+      } catch (erro) {
+        alert("Erro de conexão. O servidor (Node.js) está rodando?");
+        console.error(erro);
+      }
+    });
+  }
+});

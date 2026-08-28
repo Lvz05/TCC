@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Teste de Login - TCC</title>
+  </head>
+  <body>
+    <h2>Testando a API de Login</h2>
+    <button onclick="testarLogin()">Fazer Login de Teste</button>
+    <pre
+      id="resultado"
+      style="background: #f4f4f4; padding: 10px; margin-top: 10px"
+    ></pre>
+
+    <script>
+      async function testarLogin() {
+        const caixaResultado = document.getElementById("resultado");
+        caixaResultado.innerText = "Conectando com o servidor...";
+
+        try {
+          const resposta = await fetch("http://localhost:3000/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: "lucas@teste.tcc",
+              senha: "123",
+            }),
+          });
+
+          const dados = await resposta.json();
+
+          if (resposta.ok) {
+            caixaResultado.innerText =
+              "SUCESSO!\n\n" + JSON.stringify(dados, null, 2);
+          } else {
+            caixaResultado.innerText =
+              "ERRO DA API:\n\n" + JSON.stringify(dados, null, 2);
+          }
+        } catch (erro) {
+          caixaResultado.innerText =
+            "ERRO DE REDE: O servidor Node.js está rodando?";
+        }
+      }
+    </script>
+  </body>
+</html>
