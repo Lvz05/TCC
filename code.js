@@ -106,19 +106,85 @@ if (closeModal && panicModal) {
     }
   });
 }
-//comunidade//
+// ==========================================
+// 1. FUNÇÕES GLOBAIS DA COMUNIDADE
+// ==========================================
+
+// Função para desenhar os posts na tela
+function renderPosts(posts) {
+  const postsContainer = document.getElementById("postsContainer");
+  if (!postsContainer) return;
+
+  if (!Array.isArray(posts) || posts.length === 0) {
+    postsContainer.innerHTML = `<p style="text-align: center; color: #6b7280;">Nenhuma publicação encontrada.</p>`;
+    return;
+  }
+
+  postsContainer.innerHTML = posts
+    .map(
+      (post) => `
+      <div class="post-card">
+        <div class="post-header">
+          <div class="post-avatar">${post.autor ? post.autor.charAt(0).toUpperCase() : "U"}</div>
+          <div class="post-info">
+            <h3>${post.autor || "Anônimo"}</h3>
+            <span class="post-time">${new Date(post.data_publicacao).toLocaleDateString("pt-BR")}</span>
+          </div>
+        </div>
+        <h2 class="post-title">${post.titulo}</h2>
+        <p class="post-content">${post.conteudo}</p>
+      </div>
+    `,
+    )
+    .join("");
+}
+
+// Função global para buscar as publicações no backend
+async function carregarPublicacoes() {
+  try {
+    const resposta = await fetch("http://localhost:3000/api/comunidade");
+    if (!resposta.ok) throw new Error("Erro na requisição das publicações");
+
+    const dados = await resposta.json();
+    renderPosts(dados);
+  } catch (erro) {
+    console.error("Erro ao carregar publicações:", erro);
+  }
+}
+
+// ==========================================
+// 2. EVENTOS DA COMUNIDADE
+// ==========================================
+
+const postForm = document.getElementById("postForm");
+const newPostForm = document.getElementById("newPostForm");
+const newPostBtn = document.getElementById("newPostBtn");
+const cancelPostBtn = document.getElementById("cancelPostBtn");
+
+if (newPostBtn && newPostForm) {
+  newPostBtn.addEventListener("click", () => {
+    newPostForm.style.display = "block";
+  });
+}
+
+if (cancelPostBtn && newPostForm) {
+  cancelPostBtn.addEventListener("click", () => {
+    newPostForm.style.display = "none";
+    if (postForm) postForm.reset();
+  });
+}
+
+// Evento de envio do formulário
 if (postForm) {
   postForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const titulo = document.getElementById("postTitle").value;
-    const conteudo = document.getElementById("postContent").value;
-
+    const titulo = document.getElementById("postTitle")?.value;
+    const conteudo = document.getElementById("postContent")?.value;
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Você precisa fazer login.");
-      window.location.href = "index2.html";
+      alert("Sessão expirada. Faça login novamente.");
       return;
     }
 
@@ -129,43 +195,31 @@ if (postForm) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          titulo,
-          conteudo,
-        }),
+        body: JSON.stringify({ titulo, conteudo }),
       });
 
       const dados = await resposta.json();
 
-      if (!resposta.ok) {
-        alert(dados.erro);
-        return;
-      }
+      if (resposta.ok) {
+        alert("Publicação criada com sucesso!");
+        postForm.reset();
+        if (newPostForm) newPostForm.style.display = "none";
 
-      alert(dados.mensagem);
-      postForm.reset();
-      newPostForm.style.display = "none";
-      carregarPublicacoes();
+        // Agora carregarPublicacoes() estará acessível globalmente
+        await carregarPublicacoes();
+      } else {
+        alert(dados.erro || "Falha ao salvar a publicação.");
+      }
     } catch (erro) {
-      console.error(erro);
+      console.error("Erro no envio:", erro);
+      alert("Erro ao conectar com o servidor.");
     }
   });
-  // No seu arquivo de script do Frontend (ex: comunidade.js)
-  async function carregarPublicacoes() {
-    try {
-      const resposta = await fetch("http://localhost:3000/api/comunidade");
-      const dados = await resposta.json();
-
-      posts = dados;
-      renderPosts(); // Atualiza os elementos no HTML
-    } catch (erro) {
-      console.error("Erro ao carregar publicações:", erro);
-    }
-  }
-
-  // Chame a função quando a página carregar
-  document.addEventListener("DOMContentLoaded", carregarPublicacoes);
 }
+
+// Carrega as publicações automaticamente assim que a página é aberta
+document.addEventListener("DOMContentLoaded", carregarPublicacoes);
+;
 
 // Journal Page
 const newEntryBtn = document.getElementById("newEntryBtn");
@@ -586,59 +640,167 @@ if (disorderDetail && disorderId && disordersData[disorderId]) {
             <a href="disorders.html" class="btn btn-primary" style="margin-top: 1rem; text-decoration: none;">Voltar</a>
         </div>
     `;
+} // ==========================================
+// 1. FUNÇÃO PARA CARREGAR OS TRANSTORNOS
+// ==========================================
+async function carregarTranstornos() {
+  // Busca o campo select pelo ID (testa 'transtornos' ou 'transtorno')
+  const selectTranstornos =
+    document.getElementById("transtornos") ||
+    document.getElementById("transtorno");
+  if (!selectTranstornos) return;
+
+  try {
+    const resposta = await fetch("http://localhost:3000/api/transtornos");
+    if (!resposta.ok) throw new Error("Erro na requisição dos transtornos");
+
+    const lista = await resposta.json();
+
+    selectTranstornos.innerHTML =
+      '<option value="">Selecione um transtorno...</option>';
+
+    lista.forEach((item) => {
+      const option = document.createElement("option");
+      // Aceita 'id' ou 'id_transtorno' dependendo de como vem do seu banco
+      option.value = item.id || item.id_transtorno;
+      // Aceita 'nome' ou 'nome_transtorno'
+      option.textContent = item.nome || item.nome_transtorno;
+      selectTranstornos.appendChild(option);
+    });
+  } catch (erro) {
+    console.error("Erro ao carregar lista de transtornos:", erro);
+  }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Busca o formulário pelo ID que está no seu HTML
-  const formCadastro = document.getElementById("loginForm");
+// ==========================================
+// 2. FUNÇÃO PARA CARREGAR AS PUBLICAÇÕES
+// ==========================================
+function renderPosts(posts) {
+  const postsContainer = document.getElementById("postsContainer");
+  if (!postsContainer) return;
 
-  // Verifica se estamos na página correta antes de rodar o código
-  if (formCadastro) {
-    formCadastro.addEventListener("submit", async (evento) => {
-      // Impede a página de recarregar quando clica no botão
-      evento.preventDefault();
-
-      // 1. Pega os valores que o usuário digitou no HTML
-      const nome = document.getElementById("nome").value;
-      const email = document.getElementById("email").value;
-      const telefone = document.getElementById("telefone").value;
-      const senha = document.getElementById("password").value;
-      const confirmaSenha = document.getElementById("confirm-password").value;
-
-      // 2. Validação simples de senha
-      if (senha !== confirmaSenha) {
-        alert("As senhas não batem! Verifique e tente novamente.");
-        return;
-      }
-
-      // 3. Tenta enviar para a API (Node.js)
-      try {
-        const resposta = await fetch("http://localhost:3000/api/cadastro", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            nome: nome,
-            email: email,
-            telefone: telefone,
-            senha: senha,
-          }),
-        });
-
-        const dados = await resposta.json();
-
-        if (resposta.ok) {
-          // SUCESSO!
-          alert(dados.mensagem + " Agora você pode fazer o login.");
-          // Redireciona o usuário para a sua página de Login (substitua index2.html pelo nome correto se precisar)
-          window.location.href = "index2.html";
-        } else {
-          // ERRO (Ex: e-mail já existe)
-          alert("Erro: " + dados.erro);
-        }
-      } catch (erro) {
-        alert("Erro de conexão. O servidor (Node.js) está rodando?");
-        console.error(erro);
-      }
-    });
+  if (!Array.isArray(posts) || posts.length === 0) {
+    postsContainer.innerHTML = `<p style="text-align: center; color: #6b7280;">Nenhuma publicação encontrada.</p>`;
+    return;
   }
+
+  postsContainer.innerHTML = posts
+    .map(
+      (post) => `
+      <div class="post-card">
+        <div class="post-header">
+          <div class="post-avatar">${post.autor ? post.autor.charAt(0).toUpperCase() : "U"}</div>
+          <div class="post-info">
+            <h3>${post.autor || "Anônimo"}</h3>
+            <span class="post-time">${new Date(post.data_publicacao).toLocaleDateString("pt-BR")}</span>
+          </div>
+        </div>
+        <h2 class="post-title">${post.titulo}</h2>
+        <p class="post-content">${post.conteudo}</p>
+      </div>
+    `,
+    )
+    .join("");
+}
+
+async function carregarPublicacoes() {
+  try {
+    const resposta = await fetch("http://localhost:3000/api/comunidade");
+    if (!resposta.ok) throw new Error("Erro na requisição das publicações");
+
+    const dados = await resposta.json();
+    renderPosts(dados);
+  } catch (erro) {
+    console.error("Erro ao carregar publicações:", erro);
+  }
+}
+
+// ==========================================
+// 3. INICIALIZAÇÃO AO CARREGAR A PÁGINA
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  carregarPublicacoes();
+  carregarTranstornos();
+});
+// ==========================================
+// 1. FUNÇÃO PARA CARREGAR OS TRANSTORNOS
+// ==========================================
+async function carregarTranstornos() {
+  // Busca o campo select pelo ID (testa 'transtornos' ou 'transtorno')
+  const selectTranstornos =
+    document.getElementById("transtornos") ||
+    document.getElementById("transtorno");
+  if (!selectTranstornos) return;
+
+  try {
+    const resposta = await fetch("http://localhost:3000/api/transtornos");
+    if (!resposta.ok) throw new Error("Erro na requisição dos transtornos");
+
+    const lista = await resposta.json();
+
+    selectTranstornos.innerHTML =
+      '<option value="">Selecione um transtorno...</option>';
+
+    lista.forEach((item) => {
+      const option = document.createElement("option");
+      // Aceita 'id' ou 'id_transtorno' dependendo de como vem do seu banco
+      option.value = item.id || item.id_transtorno;
+      // Aceita 'nome' ou 'nome_transtorno'
+      option.textContent = item.nome || item.nome_transtorno;
+      selectTranstornos.appendChild(option);
+    });
+  } catch (erro) {
+    console.error("Erro ao carregar lista de transtornos:", erro);
+  }
+}
+
+// ==========================================
+// 2. FUNÇÃO PARA CARREGAR AS PUBLICAÇÕES
+// ==========================================
+function renderPosts(posts) {
+  const postsContainer = document.getElementById("postsContainer");
+  if (!postsContainer) return;
+
+  if (!Array.isArray(posts) || posts.length === 0) {
+    postsContainer.innerHTML = `<p style="text-align: center; color: #6b7280;">Nenhuma publicação encontrada.</p>`;
+    return;
+  }
+
+  postsContainer.innerHTML = posts
+    .map(
+      (post) => `
+      <div class="post-card">
+        <div class="post-header">
+          <div class="post-avatar">${post.autor ? post.autor.charAt(0).toUpperCase() : "U"}</div>
+          <div class="post-info">
+            <h3>${post.autor || "Anônimo"}</h3>
+            <span class="post-time">${new Date(post.data_publicacao).toLocaleDateString("pt-BR")}</span>
+          </div>
+        </div>
+        <h2 class="post-title">${post.titulo}</h2>
+        <p class="post-content">${post.conteudo}</p>
+      </div>
+    `,
+    )
+    .join("");
+}
+
+async function carregarPublicacoes() {
+  try {
+    const resposta = await fetch("http://localhost:3000/api/comunidade");
+    if (!resposta.ok) throw new Error("Erro na requisição das publicações");
+
+    const dados = await resposta.json();
+    renderPosts(dados);
+  } catch (erro) {
+    console.error("Erro ao carregar publicações:", erro);
+  }
+}
+
+// ==========================================
+// 3. INICIALIZAÇÃO AO CARREGAR A PÁGINA
+// ==========================================
+document.addEventListener("DOMContentLoaded", () => {
+  carregarPublicacoes();
+  carregarTranstornos();
 });

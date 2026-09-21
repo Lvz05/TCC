@@ -10,9 +10,6 @@ app.use(cors());
 // CHAVE SECRETA: Usada para criptografar os tokens JWT
 const JWT_SECRET = "ChaveSecretaDoMeuTCC2026";
 
-// LISTA DE PALAVRAS CENSURADAS (O seu Bot de Moderação)
-const palavrasBanidas = ["spam", "ofensa1", "ofensa2", "linkmalicioso"];
-
 // CONFIGURAÇÃO DE CONEXÃO COM O SEU BANCO DO WORKBENCH
 const dbConfig = {
   host: "localhost",
@@ -97,6 +94,7 @@ app.post("/api/login", async (req, res) => {
 // =========================================================================
 // 2. ROTA DA COMUNIDADE: Criar uma Publicação (Com o Bot de Censura)
 // =========================================================================
+// ROTA 1: POST (Criar publicação)
 app.post("/api/comunidade", verificarToken, async (req, res) => {
   const { titulo, conteudo } = req.body;
   const usuarioLogado = req.usuario;
@@ -107,7 +105,6 @@ app.post("/api/comunidade", verificarToken, async (req, res) => {
       .json({ erro: "Título e Conteúdo são obrigatórios." });
   }
 
-  // BOT DE MODERAÇÃO: Passa o filtro de censura no Título e no Conteúdo
   let tituloFiltrado = titulo;
   let conteudoFiltrado = conteudo;
 
@@ -122,16 +119,12 @@ app.post("/api/comunidade", verificarToken, async (req, res) => {
 
   try {
     const dataAtual = new Date();
-
-    // Se quem está postando for Usuário comum
     if (usuarioLogado.tipo === "user") {
       await pool.query(
         "INSERT INTO comunidade (id_usuario, id_usuario_adm, titulo, conteudo, data_publicacao, curtidas, comentarios) VALUES (?, NULL, ?, ?, ?, 0, 0)",
         [usuarioLogado.id, tituloFiltrado, conteudoFiltrado, dataAtual],
       );
-    }
-    // Se quem está postando for Voluntário (Admin)
-    else {
+    } else {
       await pool.query(
         "INSERT INTO comunidade (id_usuario, id_usuario_adm, titulo, conteudo, data_publicacao, curtidas, comentarios) VALUES (NULL, ?, ?, ?, ?, 0, 0)",
         [usuarioLogado.id, tituloFiltrado, conteudoFiltrado, dataAtual],
@@ -147,33 +140,33 @@ app.post("/api/comunidade", verificarToken, async (req, res) => {
       .status(500)
       .json({ erro: "Erro técnico ao salvar a publicação." });
   }
-  // No seu server.js
-  app.get("/api/comunidade", async (req, res) => {
-    try {
-      const query = `
-      SELECT
-          c.id_publicacao AS id,
-          c.titulo AS title,
-          c.conteudo AS content,
-          c.data_publicacao AS timestamp,
-          c.curtidas AS likes,
-          c.comentarios AS comments,
-          COALESCE(u.nome_usuario, v.nome_usuario) AS author
+});
+
+// ROTA 2: GET (Listar publicações)
+app.get("/api/comunidade", async (req, res) => {
+  try {
+    const querySQL = `
+      SELECT 
+          c.id_publicacao, 
+          c.titulo, 
+          c.conteudo, 
+          c.data_publicacao,
+          COALESCE(u.nome_usuario, v.nome_usuario) AS autor,
+          CASE WHEN c.id_usuario_adm IS NOT NULL THEN 'Voluntário/Admin' ELSE 'Membro' END AS tipo_autor
       FROM comunidade c
       LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
       LEFT JOIN Voluntarios v ON c.id_usuario_adm = v.id_usuario_adm
       ORDER BY c.data_publicacao DESC
     `;
 
-      const [rows] = await pool.query(query);
-      res.json(rows); // Envia os dados encontrados para quem chamou a API
-    } catch (error) {
-      console.error(error);
-      res
-        .status(500)
-        .json({ erro: "Erro ao buscar publicações da comunidade." });
-    }
-  });
+    const [publicacoes] = await pool.query(querySQL);
+    return res.json(publicacoes);
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ erro: "Erro ao buscar as publicações da comunidade." });
+  }
 });
 
 // =========================================================================
@@ -282,6 +275,78 @@ app.post("/api/cadastro", async (req, res) => {
       .json({ mensagem: "Cadastro realizado com sucesso!" });
   } catch (error) {
     console.error("Erro no cadastro:", error);
+    return res.status(500).json({ erro: "Erro ao salvar no banco de dados." });
+  }
+});
+app.get("/api/transtornos", async (req, res) => {
+  try {
+    // Se tiver uma tabela chamada 'transtornos' no MySQL:
+    const [rows] = await pool.query("SELECT * FROM transtornos");
+    res.json(rows);
+  } catch (error) {
+    // Caso não tenha tabela no banco, pode retornar a lista direta:
+    res.json([
+      { id: 1, nome: "Ansiedade Generalizada (TAG)" },
+      { id: 2, nome: "Depressão" },
+      { id: 3, nome: "TDAH" },
+      { id: 4, nome: "Autismo (TEA)" },
+    ]);
+  }
+});
+// 1. Declare o array de palavras banidas no topo do server.js
+const palavrasBanidas = ["palavra1", "palavra2", "ofensa"];
+
+// 2. Ajuste na rota POST /api/comunidade
+app.post("/api/comunidade", verificarToken, async (req, res) => {
+  const { titulo, conteudo } = req.body;
+  const usuarioLogado = req.usuario;
+
+  // Garante que pega o ID correto independente de se chamou 'id' ou 'id_usuario' no JWT
+  const idUsuario = usuarioLogado.id || usuarioLogado.id_usuario;
+
+  if (!titulo || !conteudo) {
+    return res
+      .status(400)
+      .json({ erro: "Título e Conteúdo são obrigatórios." });
+  }
+
+  let tituloFiltrado = titulo;
+  let conteudoFiltrado = conteudo;
+
+  if (Array.isArray(palavrasBanidas)) {
+    palavrasBanidas.forEach((palavra) => {
+      const regex = new RegExp(palavra, "gi");
+      tituloFiltrado = tituloFiltrado.replace(
+        regex,
+        "*".repeat(palavra.length),
+      );
+      conteudoFiltrado = conteudoFiltrado.replace(
+        regex,
+        "*".repeat(palavra.length),
+      );
+    });
+  }
+
+  try {
+    const dataAtual = new Date();
+
+    if (usuarioLogado.tipo === "user") {
+      await pool.query(
+        "INSERT INTO comunidade (id_usuario, id_usuario_adm, titulo, conteudo, data_publicacao, curtidas, comentarios) VALUES (?, NULL, ?, ?, ?, 0, 0)",
+        [idUsuario, tituloFiltrado, conteudoFiltrado, dataAtual],
+      );
+    } else {
+      await pool.query(
+        "INSERT INTO comunidade (id_usuario, id_usuario_adm, titulo, conteudo, data_publicacao, curtidas, comentarios) VALUES (NULL, ?, ?, ?, ?, 0, 0)",
+        [idUsuario, tituloFiltrado, conteudoFiltrado, dataAtual],
+      );
+    }
+
+    return res
+      .status(201)
+      .json({ mensagem: "Publicação compartilhada com sucesso!" });
+  } catch (error) {
+    console.error("Erro no MySQL:", error);
     return res.status(500).json({ erro: "Erro ao salvar no banco de dados." });
   }
 });
