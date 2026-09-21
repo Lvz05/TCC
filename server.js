@@ -19,7 +19,7 @@ const dbConfig = {
   user: "root", // Usuário padrão do MySQL
   password: "Luc@sv0504", // COLOQUE A SUA SENHA DO WORKBENCH AQUI
   database: "TCC", // Nome do seu banco de dados
-  port: 3306 // <--- Garante a conexão com o MySQL
+  port: 3306, // <--- Garante a conexão com o MySQL
 };
 
 const pool = mysql.createPool(dbConfig);
@@ -138,17 +138,42 @@ app.post("/api/comunidade", verificarToken, async (req, res) => {
       );
     }
 
-    return res
-      .status(201)
-      .json({
-        mensagem: "Publicação compartilhada com sucesso na comunidade!",
-      });
+    return res.status(201).json({
+      mensagem: "Publicação compartilhada com sucesso na comunidade!",
+    });
   } catch (error) {
     console.error(error);
     return res
       .status(500)
       .json({ erro: "Erro técnico ao salvar a publicação." });
   }
+  // No seu server.js
+  app.get("/api/comunidade", async (req, res) => {
+    try {
+      const query = `
+      SELECT
+          c.id_publicacao AS id,
+          c.titulo AS title,
+          c.conteudo AS content,
+          c.data_publicacao AS timestamp,
+          c.curtidas AS likes,
+          c.comentarios AS comments,
+          COALESCE(u.nome_usuario, v.nome_usuario) AS author
+      FROM comunidade c
+      LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+      LEFT JOIN Voluntarios v ON c.id_usuario_adm = v.id_usuario_adm
+      ORDER BY c.data_publicacao DESC
+    `;
+
+      const [rows] = await pool.query(query);
+      res.json(rows); // Envia os dados encontrados para quem chamou a API
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .json({ erro: "Erro ao buscar publicações da comunidade." });
+    }
+  });
 });
 
 // =========================================================================
@@ -190,11 +215,9 @@ app.delete("/api/admin/comunidade/:id", verificarToken, async (req, res) => {
 
   // Impede a ação imediatamente se não for um voluntário/admin cadastrado
   if (usuarioLogado.tipo !== "admin") {
-    return res
-      .status(403)
-      .json({
-        erro: "Acesso proibido. Apenas voluntários administradores podem remover conteúdos.",
-      });
+    return res.status(403).json({
+      erro: "Acesso proibido. Apenas voluntários administradores podem remover conteúdos.",
+    });
   }
 
   try {
@@ -220,7 +243,9 @@ app.delete("/api/admin/comunidade/:id", verificarToken, async (req, res) => {
 
 // Inicialização do Servidor na porta 3000
 app.listen(3000, () => {
-  console.log("Servidor do TCC rodando na porta 3000 e totalmente integrado ao MySQL!");
+  console.log(
+    "Servidor do TCC rodando na porta 3000 e totalmente integrado ao MySQL!",
+  );
 });
 // =========================================================================
 // 5. ROTA DE CADASTRO DE NOVOS USUÁRIOS
@@ -230,14 +255,16 @@ app.post("/api/cadastro", async (req, res) => {
 
   // 1. Verifica se a pessoa preencheu tudo
   if (!nome || !email || !senha) {
-    return res.status(400).json({ erro: "Preencha todos os campos obrigatórios." });
+    return res
+      .status(400)
+      .json({ erro: "Preencha todos os campos obrigatórios." });
   }
 
   try {
     // 2. Verifica se o e-mail já existe no banco
     const [usuarioExistente] = await pool.query(
       "SELECT * FROM Usuario WHERE email_usuario = ?",
-      [email]
+      [email],
     );
 
     if (usuarioExistente.length > 0) {
@@ -247,10 +274,12 @@ app.post("/api/cadastro", async (req, res) => {
     // 3. Salva o usuário no banco (ajuste 'telefone_usuario' se a coluna no MySQL tiver outro nome)
     await pool.query(
       "INSERT INTO Usuario (nome_usuario, email_usuario, telefone_usuario, senha_usuario) VALUES (?, ?, ?, ?)",
-      [nome, email, telefone, senha]
+      [nome, email, telefone, senha],
     );
 
-    return res.status(201).json({ mensagem: "Cadastro realizado com sucesso!" });
+    return res
+      .status(201)
+      .json({ mensagem: "Cadastro realizado com sucesso!" });
   } catch (error) {
     console.error("Erro no cadastro:", error);
     return res.status(500).json({ erro: "Erro ao salvar no banco de dados." });

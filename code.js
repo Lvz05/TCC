@@ -1,12 +1,89 @@
 // painel do login
 const loginForm = document.getElementById("loginForm");
+
 if (loginForm) {
-  loginForm.addEventListener("submit", (e) => {
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    window.location.href = "index4.html";
+
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("password").value;
+
+    try {
+      const resposta = await fetch("http://localhost:3000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: email,
+          senha: senha,
+        }),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        alert(dados.erro || "E-mail ou senha incorretos.");
+        return;
+      }
+
+      localStorage.setItem("token", dados.token);
+      localStorage.setItem("tipoUsuario", dados.tipo);
+      localStorage.setItem("nomeUsuario", dados.nome);
+
+      window.location.href = "index4.html";
+    } catch (erro) {
+      console.error("Erro no login:", erro);
+      alert("Não foi possível conectar ao servidor.");
+    }
   });
 }
+const cadastroForm = document.getElementById("cadastroForm");
 
+if (cadastroForm) {
+  cadastroForm.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
+
+    const nome = document.getElementById("nome").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const telefone = document.getElementById("telefone").value.trim();
+    const senha = document.getElementById("password").value;
+    const confirmaSenha = document.getElementById("confirm-password").value;
+
+    if (senha !== confirmaSenha) {
+      alert("As senhas não coincidem.");
+      return;
+    }
+
+    try {
+      const resposta = await fetch("http://localhost:3000/api/cadastro", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          nome,
+          email,
+          telefone,
+          senha,
+        }),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        alert(dados.erro);
+        return;
+      }
+
+      alert(dados.mensagem);
+      window.location.href = "index2.html";
+    } catch (erro) {
+      console.error(erro);
+      alert("Erro ao conectar com o servidor.");
+    }
+  });
+}
 // botão do panico
 const panicButton = document.getElementById("panicButton");
 const panicModal = document.getElementById("panicModal");
@@ -29,131 +106,66 @@ if (closeModal && panicModal) {
     }
   });
 }
-
-// Community Page
-const newPostBtn = document.getElementById("newPostBtn");
-const newPostForm = document.getElementById("newPostForm");
-const cancelPostBtn = document.getElementById("cancelPostBtn");
-const postForm = document.getElementById("postForm");
-const postsContainer = document.getElementById("postsContainer");
-
-// Sample posts
-let posts = [
-  {
-    id: 1,
-    author: "Ana Silva",
-    title: "Compartilhando minha jornada com ansiedade",
-    content:
-      "Hoje completei 30 dias de terapia e estou me sentindo muito melhor. Queria compartilhar que buscar ajuda foi a melhor decisão que tomei...",
-    likes: 24,
-    comments: 8,
-    timestamp: "2h atrás",
-  },
-  {
-    id: 2,
-    author: "Carlos Mendes",
-    title: "Dicas de respiração que me ajudaram",
-    content:
-      "Descobri uma técnica de respiração 4-7-8 que tem me ajudado muito nos momentos de crise. Queria compartilhar com vocês...",
-    likes: 42,
-    comments: 15,
-    timestamp: "5h atrás",
-  },
-  {
-    id: 3,
-    author: "Maria Costa",
-    title: "Livros que mudaram minha perspectiva",
-    content:
-      "Queria recomendar alguns livros sobre mindfulness que realmente fizeram diferença na minha vida...",
-    likes: 18,
-    comments: 6,
-    timestamp: "1 dia atrás",
-  },
-];
-
-function renderPosts() {
-  if (!postsContainer) return;
-
-  postsContainer.innerHTML = posts
-    .map(
-      (post) => `
-        <div class="post-card">
-            <div class="post-header">
-                <div class="post-avatar">${post.author.charAt(0)}</div>
-                <div>
-                    <div class="post-info">
-                        <h3>${post.author}</h3>
-                    </div>
-                    <div class="post-time">${post.timestamp}</div>
-                </div>
-            </div>
-            <h3 class="post-title">${post.title}</h3>
-            <p class="post-content">${post.content}</p>
-            <div class="post-actions">
-                <button class="post-action">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                    <span>${post.likes}</span>
-                </button>
-                <button class="post-action">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <span>${post.comments}</span>
-                </button>
-                <button class="post-action">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                    </svg>
-                    <span>Compartilhar</span>
-                </button>
-            </div>
-        </div>
-    `,
-    )
-    .join("");
-}
-
-if (newPostBtn && newPostForm) {
-  newPostBtn.addEventListener("click", () => {
-    newPostForm.style.display = "block";
-  });
-}
-
-if (cancelPostBtn && newPostForm) {
-  cancelPostBtn.addEventListener("click", () => {
-    newPostForm.style.display = "none";
-    postForm.reset();
-  });
-}
-
+//comunidade//
 if (postForm) {
-  postForm.addEventListener("submit", (e) => {
+  postForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const title = document.getElementById("postTitle").value;
-    const content = document.getElementById("postContent").value;
 
-    const newPost = {
-      id: posts.length + 1,
-      author: "Você",
-      title: title,
-      content: content,
-      likes: 0,
-      comments: 0,
-      timestamp: "Agora",
-    };
+    const titulo = document.getElementById("postTitle").value;
+    const conteudo = document.getElementById("postContent").value;
 
-    posts.unshift(newPost);
-    renderPosts();
-    newPostForm.style.display = "none";
-    postForm.reset();
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Você precisa fazer login.");
+      window.location.href = "index2.html";
+      return;
+    }
+
+    try {
+      const resposta = await fetch("http://localhost:3000/api/comunidade", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          titulo,
+          conteudo,
+        }),
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        alert(dados.erro);
+        return;
+      }
+
+      alert(dados.mensagem);
+      postForm.reset();
+      newPostForm.style.display = "none";
+      carregarPublicacoes();
+    } catch (erro) {
+      console.error(erro);
+    }
   });
-}
+  // No seu arquivo de script do Frontend (ex: comunidade.js)
+  async function carregarPublicacoes() {
+    try {
+      const resposta = await fetch("http://localhost:3000/api/comunidade");
+      const dados = await resposta.json();
 
-renderPosts();
+      posts = dados;
+      renderPosts(); // Atualiza os elementos no HTML
+    } catch (erro) {
+      console.error("Erro ao carregar publicações:", erro);
+    }
+  }
+
+  // Chame a função quando a página carregar
+  document.addEventListener("DOMContentLoaded", carregarPublicacoes);
+}
 
 // Journal Page
 const newEntryBtn = document.getElementById("newEntryBtn");
@@ -312,29 +324,7 @@ if (entryForm) {
 }
 
 renderEntries();
-// Seleciona o formulário de cadastro
-const cadastroForm = document.getElementById("loginForm");
 
-if (cadastroForm) {
-  cadastroForm.addEventListener("submit", (e) => {
-    e.preventDefault(); // Impede a página de recarregar
-
-    // Pegamos os campos de senha para comparar
-    const senha = document.getElementById("password").value;
-    const confirmaSenha = document.getElementById("confirm-password").value;
-
-    if (senha !== confirmaSenha) {
-      alert("As senhas não coincidem! Tente novamente.");
-      return; // Para a execução aqui
-    }
-
-    // Se chegou aqui, as senhas são iguais!
-    alert("Cadastro realizado com sucesso! Redirecionando para o login...");
-
-    // Manda para a página de LOGIN
-    window.location.href = "index2.html";
-  });
-}
 // Disorder data
 const disordersData = {
   depressao: {
