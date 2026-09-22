@@ -8,15 +8,17 @@ app.use(express.json());
 app.use(cors());
 
 // CHAVE SECRETA: Usada para criptografar os tokens JWT
-const JWT_SECRET = "IDONTHAVEIDEIA";
-
-// CONFIGURAÇÃO DE CONEXÃO COM O SEU BANCO DO WORKBENCH
-const dbConfig = {
-  host: "localhost",
-  user: "root", // Usuário padrão do MySQL
-  password: "Luc@sv0504", // COLOQUE A SUA SENHA DO WORKBENCH AQUI
-  database: "TCC", // Nome do seu banco de dados
-  port: 3306, // <--- Garante a conexão com o MySQL
+const JWT_SECRET = process.env.JWT_SECRET || "IDONTHAVEIDEIA";
+// CONFIGURAÇÃO DE CONEXÃO COM O SEU BANCO DO WORKBENCH  
+ const dbConfig = {
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
+  ssl: {
+    rejectUnauthorized: false // Garante que conexões SSL externas funcionem sem erros
+  }
 };
 
 const pool = mysql.createPool(dbConfig);
