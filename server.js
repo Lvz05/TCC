@@ -350,3 +350,11 @@ app.post("/api/comunidade", verificarToken, async (req, res) => {
     return res.status(500).json({ erro: "Erro ao salvar no banco de dados." });
   }
 });
+// No final do seu server.js:
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor a rodar na porta ${PORT}`);
+});
+
+// ADICIONE ESTA LINHA NO FINAL:
+module.exports = app;
