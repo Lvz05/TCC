@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(cors());
 
 // CHAVE SECRETA: Usada para criptografar os tokens JWT
-const JWT_SECRET = "ChaveSecretaDoMeuTCC2026";
+const JWT_SECRET = "IDONTHAVEIDEIA";
 
 // CONFIGURAÇÃO DE CONEXÃO COM O SEU BANCO DO WORKBENCH
 const dbConfig = {
