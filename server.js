@@ -357,6 +357,9 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor a rodar na porta ${PORT}`);
 });
-
+console.log("--- DIAGNÓSTICO DE VARIÁVEIS ---");
+console.log("HOST LIDO:", process.env.DB_HOST);
+console.log("USER LIDO:", process.env.DB_USER);
+console.log("NAME LIDO:", process.env.DB_NAME);
 // ADICIONE ESTA LINHA NO FINAL:
 module.exports = app;
