@@ -804,3 +804,4 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarPublicacoes();
   carregarTranstornos();
 });
+const API_URL = ""; // Substitua pela sua URL do Vercel
